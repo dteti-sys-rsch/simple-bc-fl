@@ -4,14 +4,14 @@ pragma solidity ^0.8.0;
 contract SimpleFL {
     // A contract for storing some parameters for simple federated learning
     struct Model {
-        bytes32 computeId;
-        bytes32 modelHash;
-        uint computeRound;
+        bytes computeId;
+        bytes modelHash;
+        int computeRound;
     }
 
     mapping(address => Model[]) public models;
 
-    function submitModel(bytes32 _computeId, bytes32 _modelHash, uint _computeRound) public {
+    function submitModel(bytes memory _computeId, bytes memory _modelHash, int _computeRound) public {
         models[msg.sender].push(Model({
             computeId: _computeId,
             modelHash: _modelHash,
@@ -19,12 +19,13 @@ contract SimpleFL {
         }));
     }
 
-    function getModelHash(bytes32 _computeId, uint _computeRound) public view returns (bytes32) {
-        bytes32 retval = "";
+    function getModelHash(bytes memory _computeId, int _computeRound) public view returns (bytes memory) {
+        bytes memory retval = "";
 
         for (uint16 i = 0; i < models[msg.sender].length; i++) {
-            if (models[msg.sender][i].computeId != _computeId) {
-                if (models[msg.sender][i].computeRound != _computeRound)
+            // if (models[msg.sender][i].computeId != _computeId) {
+            if (keccak256(models[msg.sender][i].computeId) == keccak256(_computeId)) {
+                if (models[msg.sender][i].computeRound == _computeRound)
                     retval = models[msg.sender][i].modelHash;
             }
         }
